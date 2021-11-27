@@ -4,19 +4,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class TurmitePanel extends JPanel implements ActionListener {
     static final int SCREEN_WIDTH=700;
     static final int SCREEN_HEIGTH=700;
     static final int UNIT_SIZE=20;
     static final int DELAY=70;
-    final int xy[][]=new int[SCREEN_WIDTH/UNIT_SIZE][SCREEN_HEIGTH/UNIT_SIZE];
-    int x=SCREEN_WIDTH/UNIT_SIZE/2;
-    int y=SCREEN_HEIGTH/UNIT_SIZE/2;
-    int direction=0; //0,90,180,270
-    int stat=0;//0,1
-    boolean running=false;
+    static int[][] xy =new int[SCREEN_WIDTH/UNIT_SIZE][SCREEN_HEIGTH/UNIT_SIZE];
+    static int x=SCREEN_WIDTH/UNIT_SIZE/2;
+    static int y=SCREEN_HEIGTH/UNIT_SIZE/2;
+    static int direction=0; //0,90,180,270
+    static int stat=0;//0,1
+    static boolean running=false;
     Timer timer;
     JLabel savefile=new JLabel("Filename for save:");
     JTextField savef=new JTextField();
@@ -46,81 +45,65 @@ public class TurmitePanel extends JPanel implements ActionListener {
         add.setBounds(760,510,180,50);
         start.setBounds(760,640,180,50);stop.setBounds(760,640,180,50);open.setBounds(760,350,180,50);readin.setBounds(710,300,280,50);
         stop.setVisible(false);
-        save.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    save();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+        save.addActionListener(e -> {
+            try {
+                save();
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         });
-        open.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    load();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+        open.addActionListener(e -> {
+            try {
+                load();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
 
-            }
         });
-        add.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String[] tmp=state_read.getText().split("-");
-                states.add(new TurmiteLogic(Character.getNumericValue( tmp[0].charAt(0)),Character.getNumericValue(tmp[1].charAt(0)),tmp[2].charAt(0),Character.getNumericValue(tmp[3].charAt(0)),Character.getNumericValue(tmp[4].charAt(0))));
-                }
-        });
-        clear.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                states.clear();
-                for(int i=0;i<SCREEN_WIDTH/UNIT_SIZE;i++){
-                    for (int j=0;j<SCREEN_HEIGTH/UNIT_SIZE;j++){
-                        xy[i][j]=0;
-                    }
+        add.addActionListener(e -> {
+            String[] tmp=state_read.getText().split("-");
+            states.add(new TurmiteLogic(Character.getNumericValue( tmp[0].charAt(0)),Character.getNumericValue(tmp[1].charAt(0)),tmp[2].toLowerCase().charAt(0),Character.getNumericValue(tmp[3].charAt(0)),Character.getNumericValue(tmp[4].charAt(0))));
+            });
+        clear.addActionListener(e -> {
+            states.clear();
+            for(int i=0;i<SCREEN_WIDTH/UNIT_SIZE;i++){
+                for (int j=0;j<SCREEN_HEIGTH/UNIT_SIZE;j++){
+                    xy[i][j]=0;
                 }
             }
+            x=SCREEN_WIDTH/UNIT_SIZE/2;
+            y=SCREEN_HEIGTH/UNIT_SIZE/2;
         });
-        start.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                running=true;
-                start();
-                clear.setVisible(false);
-                savefile.setVisible(false);
-                savef.setVisible(false);    // Create and populate the list
-                save.setVisible(false);
-                start.setVisible(false);
-                add.setVisible(false);
-                state_read.setVisible(false);
-                readin.setVisible(false);
-                filename.setVisible(false);
-                open.setVisible(false);
-                state.setVisible(false);
-                stop.setVisible(true);
-            }
+        start.addActionListener(e -> {
+            running=true;
+            start();
+            clear.setVisible(false);
+            savefile.setVisible(false);
+            savef.setVisible(false);
+            save.setVisible(false);
+            start.setVisible(false);
+            add.setVisible(false);
+            state_read.setVisible(false);
+            readin.setVisible(false);
+            filename.setVisible(false);
+            open.setVisible(false);
+            state.setVisible(false);
+            stop.setVisible(true);
         });
-        stop.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                running=false;
-                clear.setVisible(true);
-                start.setVisible(true);
-                savefile.setVisible(true);
-                savef.setVisible(true);
-                save.setVisible(true);
-                add.setVisible(true);
-                state_read.setVisible(true);
-                readin.setVisible(true);
-                filename.setVisible(true);
-                open.setVisible(true);
-                state.setVisible(true);
-                stop.setVisible(false);
-            }
+        stop.addActionListener(e -> {
+            running=false;
+            clear.setVisible(true);
+            start.setVisible(true);
+            savefile.setVisible(true);
+            savef.setVisible(true);
+            save.setVisible(true);
+            add.setVisible(true);
+            state_read.setVisible(true);
+            readin.setVisible(true);
+            filename.setVisible(true);
+            open.setVisible(true);
+            state.setVisible(true);
+            stop.setVisible(false);
         });
 
 
@@ -155,33 +138,42 @@ public class TurmitePanel extends JPanel implements ActionListener {
 
 
     }
+    public void check_border(){
+        if (x<1)
+            running=false;
+        if (y<1)
+            running=false;
+        if (x>SCREEN_WIDTH-1)
+            running =false;
+        if (y>SCREEN_HEIGTH-1)
+            running =false;
+    }
     public void check_state(){
-        Iterator<TurmiteLogic> iter= states.iterator();
-        while(iter.hasNext()){
-            TurmiteLogic tmp =iter.next();
-            if (tmp.state==stat && tmp.field==xy[x][y]){
+        for (TurmiteLogic tmp : states) {
+            if (tmp.state == stat && tmp.field == xy[x][y]) {
 
-                switch (tmp.direction){
+                switch (tmp.direction) {
                     case 'l':
-                        direction-=90;
+                        direction -= 90;
                         break;
                     case 'r':
-                        direction+=90;
+                        direction += 90;
                         break;
                     case 'n':
                         break;
                     case 'u':
-                        direction-=90;
+                        direction -= 180;
                 }
-                if (direction==-90)
-                    direction=270;
-                if (direction==360)
-                    direction=0;
-                if (direction==-180)
-                    direction=180;
-                xy[x][y]=tmp.newfield;
-                stat=tmp.newstate;
+                if (direction == -90)
+                    direction = 270;
+                if (direction == 360)
+                    direction = 0;
+                if (direction == -180)
+                    direction = 180;
+                xy[x][y] = tmp.newfield;
+                stat = tmp.newstate;
                 move();
+                check_border();
             }
 
         }
@@ -189,20 +181,11 @@ public class TurmitePanel extends JPanel implements ActionListener {
 
     }
     public void move(){
-        switch(direction) {
-            case 90:
-                x+=1;
-                break;
-            case 180:
-                y-=1;
-                break;
-            case 270:
-                x-=1;
-                break;
-            case 0:
-                y+=1;
-                break;
-
+        switch (direction) {
+            case 90 -> x += 1;
+            case 180 -> y -= 1;
+            case 270 -> x -= 1;
+            case 0 -> y += 1;
         }
     }
 
@@ -210,31 +193,32 @@ public class TurmitePanel extends JPanel implements ActionListener {
         StringBuilder builder = new StringBuilder();
         for(int i=0;i<SCREEN_WIDTH/UNIT_SIZE;i++){
             for (int j=0;j<SCREEN_HEIGTH/UNIT_SIZE;j++){
-                builder.append(xy[x][y]+" ");
+                builder.append(xy[i][j]).append(" ");
                 if (j<(SCREEN_HEIGTH/UNIT_SIZE)-1)
                     builder.append(",");
             }
             builder.append("\n");
         }
-        BufferedWriter writer =new BufferedWriter(new FileWriter(savef.getText()+".txt"));
+        BufferedWriter writer =new BufferedWriter(new FileWriter((savef.getText()+".txt")));
         writer.write(builder.toString());
         writer.close();
     }
 
     public void load() throws IOException {
-        BufferedReader reader =new BufferedReader(new FileReader(readin.getText()+".txt"));
+        BufferedReader reader =new BufferedReader(new FileReader((readin.getText()+".txt")));
         int row=0;
         String line;
         while((line=reader.readLine()) != null){
             String [] cols=line.split(",");
             int col = 0;
             for (String c : cols){
-                xy[row][col]=Integer.parseInt(c);
+                xy[row][col]=Character.getNumericValue(c.charAt(0));
                 col++;
             }
             row++;
         }
         reader.close();
+        repaint();
     }
 
 

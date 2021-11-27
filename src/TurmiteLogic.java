@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-
 public class TurmiteLogic {
     public int state;
     public int field;

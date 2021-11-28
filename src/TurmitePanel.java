@@ -47,6 +47,7 @@ public class TurmitePanel extends JPanel implements ActionListener {
         stop.setVisible(false);
         save.addActionListener(e -> {
             try {
+                save_states();
                 save();
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -54,6 +55,7 @@ public class TurmitePanel extends JPanel implements ActionListener {
         });
         open.addActionListener(e -> {
             try {
+                load_states();
                 load();
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -187,6 +189,33 @@ public class TurmitePanel extends JPanel implements ActionListener {
             case 270 -> x -= 1;
             case 0 -> y += 1;
         }
+    }
+
+    public void save_states() throws IOException {
+        FileOutputStream fos=new FileOutputStream((savef.getText()+"states.txt"));
+        ObjectOutputStream oot=new ObjectOutputStream(fos);
+        for (Object obj :states){
+            oot.writeObject(states);
+            oot.reset();
+        }
+        oot.close();
+        fos.close();
+    }
+    public void load_states() throws IOException {
+        states.clear();
+
+        try {
+        FileInputStream fis = new FileInputStream((readin.getText()+"states.txt"));
+        ObjectInputStream ois= new ObjectInputStream(fis);
+        TurmiteLogic tmp;
+
+            states = (ArrayList) ois.readObject();
+            ois.close();
+            fis.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void save() throws IOException {

@@ -1,4 +1,5 @@
-public class TurmiteLogic {
+import java.io.Serializable;
+public class TurmiteLogic implements Serializable {
     public int state;
     public int field;
     public char direction;

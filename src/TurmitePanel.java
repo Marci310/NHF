@@ -65,7 +65,7 @@ public class TurmitePanel extends JPanel implements ActionListener {
         add.addActionListener(e -> {
             String[] tmp=state_read.getText().split("-");
             states.add(new TurmiteLogic(Character.getNumericValue( tmp[0].charAt(0)),Character.getNumericValue(tmp[1].charAt(0)),tmp[2].toLowerCase().charAt(0),Character.getNumericValue(tmp[3].charAt(0)),Character.getNumericValue(tmp[4].charAt(0))));
-            });
+        });
         clear.addActionListener(e -> {
             states.clear();
             for(int i=0;i<SCREEN_WIDTH/UNIT_SIZE;i++){
@@ -129,7 +129,7 @@ public class TurmitePanel extends JPanel implements ActionListener {
 
         for(int i=0;i<SCREEN_WIDTH/UNIT_SIZE;i++){
             for (int j=0;j<SCREEN_HEIGTH/UNIT_SIZE;j++){
-                    if (xy[i][j]==1){
+                if (xy[i][j]==1){
                     g.setColor(Color.black);
                     g.fillRect((i-1)*UNIT_SIZE,(j-1)*UNIT_SIZE,UNIT_SIZE,UNIT_SIZE);}
             }
@@ -194,10 +194,8 @@ public class TurmitePanel extends JPanel implements ActionListener {
     public void save_states() throws IOException {
         FileOutputStream fos=new FileOutputStream((savef.getText()+"states.txt"));
         ObjectOutputStream oot=new ObjectOutputStream(fos);
-        for (Object obj :states){
-            oot.writeObject(states);
-            oot.reset();
-        }
+        oot.writeObject(states);
+        oot.reset();
         oot.close();
         fos.close();
     }
@@ -205,10 +203,8 @@ public class TurmitePanel extends JPanel implements ActionListener {
         states.clear();
 
         try {
-        FileInputStream fis = new FileInputStream((readin.getText()+"states.txt"));
-        ObjectInputStream ois= new ObjectInputStream(fis);
-        TurmiteLogic tmp;
-
+            FileInputStream fis = new FileInputStream((readin.getText()+"states.txt"));
+            ObjectInputStream ois= new ObjectInputStream(fis);
             states = (ArrayList) ois.readObject();
             ois.close();
             fis.close();

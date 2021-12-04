@@ -18,7 +18,6 @@ public class TurmitePanel extends JPanel implements ActionListener {
     public int direction=0; //0,90,180,270
     public int stat=0;//0,1
     private  boolean running=false;
-    private Timer timer;
     private JLabel savefile=new JLabel("Filename for save:");
     private JTextField savef=new JTextField();
     private JButton save=new JButton("Save");
@@ -65,13 +64,8 @@ public class TurmitePanel extends JPanel implements ActionListener {
             }
 
         });
-        add.addActionListener(e -> {
-
-            add(state_read.getText());
-        });
-        clear.addActionListener(e -> {
-            clear();
-        });
+        add.addActionListener(e -> add(state_read.getText()));
+        clear.addActionListener(e -> clear());
         start.addActionListener(e -> {
             start();
             clear.setVisible(false);
@@ -114,7 +108,7 @@ public class TurmitePanel extends JPanel implements ActionListener {
 
     public void start(){
         running=true;
-        timer= new Timer(DELAY,this);
+        Timer timer = new Timer(DELAY, this);
         timer.start();
     }
     public void paint(Graphics g){

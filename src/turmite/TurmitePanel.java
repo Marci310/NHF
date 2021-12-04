@@ -1,3 +1,5 @@
+package turmite;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -6,33 +8,34 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class TurmitePanel extends JPanel implements ActionListener {
-    static final int SCREEN_WIDTH=700;
-    static final int SCREEN_HEIGTH=700;
-    static final int UNIT_SIZE=20;
-    static final int DELAY=70;
-    static int[][] xy =new int[SCREEN_WIDTH/UNIT_SIZE][SCREEN_HEIGTH/UNIT_SIZE];
-    static int x=SCREEN_WIDTH/UNIT_SIZE/2;
-    static int y=SCREEN_HEIGTH/UNIT_SIZE/2;
-    static int direction=0; //0,90,180,270
-    static int stat=0;//0,1
-    static boolean running=false;
-    Timer timer;
-    JLabel savefile=new JLabel("Filename for save:");
-    JTextField savef=new JTextField();
-    JButton save=new JButton("Save");
-    JLabel filename=new JLabel("Filename:");
-    JTextField readin =new JTextField();
-    JButton open = new JButton("Open");
-    JLabel state=new JLabel("State(sta.-fie.-dir.-new fie.-new sta.)");
-    JTextField state_read =new JTextField();
-    JButton add=new JButton("Add");
-    JButton start=new JButton("Start");
-    JButton stop=new JButton("Stop");
-    JButton clear =new JButton("Clear");
-    ArrayList<TurmiteLogic> states=new ArrayList<>();
+    private  static final int SCREEN_WIDTH=700;
+    private  static final int SCREEN_HEIGTH=700;
+    private  static final int UNIT_SIZE=20;
+    private  static final int DELAY=70;
+    public static int[][] xy =new int[SCREEN_WIDTH/UNIT_SIZE][SCREEN_HEIGTH/UNIT_SIZE];
+    private int x=SCREEN_WIDTH/UNIT_SIZE/2;
+    private int y=SCREEN_HEIGTH/UNIT_SIZE/2;
+    public int direction=0; //0,90,180,270
+    public int stat=0;//0,1
+    private  boolean running=false;
+    private Timer timer;
+    private JLabel savefile=new JLabel("Filename for save:");
+    private JTextField savef=new JTextField();
+    private JButton save=new JButton("Save");
+    private JLabel filename=new JLabel("Filename:");
+    private JTextField readin =new JTextField();
+    private JButton open = new JButton("Open");
+    private JLabel state=new JLabel("State(sta.-fie.-dir.-new fie.-new sta.)");
+    private JTextField state_read =new JTextField();
+    private JButton add=new JButton("Add");
+    private JButton start=new JButton("Start");
+    private JButton stop=new JButton("Stop");
+    private JButton clear =new JButton("Clear");
+    public ArrayList<TurmiteLogic> states=new ArrayList<>();
 
 
-    TurmitePanel(){
+
+    public TurmitePanel(){
         this.setPreferredSize(new Dimension(SCREEN_WIDTH+300,SCREEN_HEIGTH));
         this.setLayout(null);
         clear.setBounds(760,10,180,50);
@@ -47,37 +50,29 @@ public class TurmitePanel extends JPanel implements ActionListener {
         stop.setVisible(false);
         save.addActionListener(e -> {
             try {
-                save_states();
-                save();
+                save_states(savef.getText());
+                save(savef.getText());
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
         });
         open.addActionListener(e -> {
             try {
-                load_states();
-                load();
+                load_states(readin.getText());
+                load(readin.getText());
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
 
         });
         add.addActionListener(e -> {
-            String[] tmp=state_read.getText().split("-");
-            states.add(new TurmiteLogic(Character.getNumericValue( tmp[0].charAt(0)),Character.getNumericValue(tmp[1].charAt(0)),tmp[2].toLowerCase().charAt(0),Character.getNumericValue(tmp[3].charAt(0)),Character.getNumericValue(tmp[4].charAt(0))));
+
+            add(state_read.getText());
         });
         clear.addActionListener(e -> {
-            states.clear();
-            for(int i=0;i<SCREEN_WIDTH/UNIT_SIZE;i++){
-                for (int j=0;j<SCREEN_HEIGTH/UNIT_SIZE;j++){
-                    xy[i][j]=0;
-                }
-            }
-            x=SCREEN_WIDTH/UNIT_SIZE/2;
-            y=SCREEN_HEIGTH/UNIT_SIZE/2;
+            clear();
         });
         start.addActionListener(e -> {
-            running=true;
             start();
             clear.setVisible(false);
             savefile.setVisible(false);
@@ -112,6 +107,11 @@ public class TurmitePanel extends JPanel implements ActionListener {
         this.add(start);this.add(stop);this.add(readin);this.add(open);this.add(filename);this.add(state);this.add(state_read);this.add(add);this.add(savefile);this.add(savef);this.add(save);this.add(clear);
 
     }
+
+    public int[][] getXy() {
+        return xy;
+    }
+
     public void start(){
         running=true;
         timer= new Timer(DELAY,this);
@@ -153,34 +153,13 @@ public class TurmitePanel extends JPanel implements ActionListener {
     public void check_state(){
         for (TurmiteLogic tmp : states) {
             if (tmp.state == stat && tmp.field == xy[x][y]) {
-
-                switch (tmp.direction) {
-                    case 'l':
-                        direction -= 90;
-                        break;
-                    case 'r':
-                        direction += 90;
-                        break;
-                    case 'n':
-                        break;
-                    case 'u':
-                        direction -= 180;
-                }
-                if (direction == -90)
-                    direction = 270;
-                if (direction == 360)
-                    direction = 0;
-                if (direction == -180)
-                    direction = 180;
+                direction=tmp.check_degree(direction);
                 xy[x][y] = tmp.newfield;
                 stat = tmp.newstate;
                 move();
                 check_border();
             }
-
         }
-
-
     }
     public void move(){
         switch (direction) {
@@ -191,19 +170,36 @@ public class TurmitePanel extends JPanel implements ActionListener {
         }
     }
 
-    public void save_states() throws IOException {
-        FileOutputStream fos=new FileOutputStream((savef.getText()+"states.txt"));
+    public void clear(){
+        states.clear();
+        for(int i=0;i<SCREEN_WIDTH/UNIT_SIZE;i++){
+            for (int j=0;j<SCREEN_HEIGTH/UNIT_SIZE;j++){
+                xy[i][j]=0;
+            }
+        }
+        x=SCREEN_WIDTH/UNIT_SIZE/2;
+        y=SCREEN_HEIGTH/UNIT_SIZE/2;
+        repaint();
+
+    }
+    public void add(String text){
+        String[] tmp=text.split("-");
+        states.add(new TurmiteLogic(Character.getNumericValue( tmp[0].charAt(0)),Character.getNumericValue(tmp[1].charAt(0)),tmp[2].toLowerCase().charAt(0),Character.getNumericValue(tmp[3].charAt(0)),Character.getNumericValue(tmp[4].charAt(0))));
+    }
+
+    public void save_states(String name) throws IOException {
+        FileOutputStream fos=new FileOutputStream((name+"states.txt"));
         ObjectOutputStream oot=new ObjectOutputStream(fos);
         oot.writeObject(states);
         oot.reset();
         oot.close();
         fos.close();
     }
-    public void load_states() throws IOException {
+    public void load_states(String name) throws IOException {
         states.clear();
 
         try {
-            FileInputStream fis = new FileInputStream((readin.getText()+"states.txt"));
+            FileInputStream fis = new FileInputStream((name+"states.txt"));
             ObjectInputStream ois= new ObjectInputStream(fis);
             states = (ArrayList) ois.readObject();
             ois.close();
@@ -211,10 +207,9 @@ public class TurmitePanel extends JPanel implements ActionListener {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-
     }
 
-    public void save() throws IOException {
+    public void save(String name) throws IOException {
         StringBuilder builder = new StringBuilder();
         for(int i=0;i<SCREEN_WIDTH/UNIT_SIZE;i++){
             for (int j=0;j<SCREEN_HEIGTH/UNIT_SIZE;j++){
@@ -224,13 +219,13 @@ public class TurmitePanel extends JPanel implements ActionListener {
             }
             builder.append("\n");
         }
-        BufferedWriter writer =new BufferedWriter(new FileWriter((savef.getText()+".txt")));
+        BufferedWriter writer =new BufferedWriter(new FileWriter((name+".txt")));
         writer.write(builder.toString());
         writer.close();
     }
 
-    public void load() throws IOException {
-        BufferedReader reader =new BufferedReader(new FileReader((readin.getText()+".txt")));
+    public void load(String name) throws IOException {
+        BufferedReader reader =new BufferedReader(new FileReader((name+".txt")));
         int row=0;
         String line;
         while((line=reader.readLine()) != null){
@@ -250,10 +245,8 @@ public class TurmitePanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (running){
-
             check_state();
         }
         repaint();
-
     }
 }

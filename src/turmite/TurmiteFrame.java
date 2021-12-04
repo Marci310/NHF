@@ -1,10 +1,12 @@
+package turmite;
+
 import javax.swing.*;
 
 public class TurmiteFrame extends JFrame {
-    TurmiteFrame(){
+    public TurmiteFrame(){
 
         this.add(new TurmitePanel());
-        this.setTitle("Turmite");
+        this.setTitle("turmite.Turmite");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
         this.pack();
